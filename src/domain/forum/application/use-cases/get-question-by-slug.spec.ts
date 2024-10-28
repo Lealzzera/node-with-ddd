@@ -18,7 +18,6 @@ describe("Get Question By Slug Test", () => {
 
     inMemoryQuestionsRepository.create(newQuestion);
 
-    console.log(newQuestion);
     const questionBySlug = await sut.execute({ slug: "example-question" });
 
     expect(newQuestion.id).toEqual(questionBySlug.question.id);
