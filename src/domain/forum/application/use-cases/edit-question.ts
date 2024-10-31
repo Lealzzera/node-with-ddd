@@ -1,4 +1,3 @@
-import { throws } from "assert";
 import { Question } from "../../enterprise/entities/question";
 import { QuestionsRepository } from "../repositories/questions-repository";
 
