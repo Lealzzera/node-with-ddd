@@ -6,6 +6,20 @@ export class InMemoryAnswerCommentsRepository
 {
   public items: AnswerComment[] = [];
 
+  async findById(id: string): Promise<AnswerComment | null> {
+    const answerComment = await this.items.find(
+      (item) => item.id.toString() === id
+    );
+
+    return answerComment ?? null;
+  }
+  async delete(answerComment: AnswerComment): Promise<void> {
+    const answerIndex = this.items.findIndex(
+      (item) => item.id === answerComment.id
+    );
+    await this.items.splice(answerIndex, 1);
+  }
+
   async create(answerComment: AnswerComment): Promise<void> {
     this.items.push(answerComment);
   }
