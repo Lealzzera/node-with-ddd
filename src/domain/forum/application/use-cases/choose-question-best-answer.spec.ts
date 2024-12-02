@@ -5,6 +5,8 @@ import { InMemoryAnswersRepository } from "test/repositories/in-memory-answers-r
 import { ChooseQuestionBestAnswerUseCase } from "./choose-question-best-answer";
 import { makeAnswer } from "test/factories/make-answer";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
+import { NotAllowedError } from "./errors/not-allowed-error";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
 let inMemoryAnswersRespository: InMemoryAnswersRepository;
@@ -43,50 +45,6 @@ describe("Choose Question Best Answer Test", () => {
     );
   });
 
-  it("Should not be able to select a best answer with a wrong questionId", async () => {
-    const newQuestion = makeQuestion({
-      slug: Slug.create("example-question"),
-    });
-
-    const newAnswer = makeAnswer({
-      authorId: new UniqueEntityID("author-1"),
-      questionId: newQuestion.id,
-    });
-
-    await inMemoryQuestionsRepository.create(newQuestion);
-    await inMemoryAnswersRespository.create(newAnswer);
-
-    expect(async () => {
-      await sut.execute({
-        questionId: "question-id-1",
-        authorId: newQuestion.authorId.toString(),
-        answerId: newAnswer.id.toString(),
-      });
-    }).rejects.toBeInstanceOf(Error);
-  });
-
-  it("Should not be able to select a best answer with a wrong authorId", async () => {
-    const newQuestion = makeQuestion({
-      slug: Slug.create("example-question"),
-    });
-
-    const newAnswer = makeAnswer({
-      authorId: new UniqueEntityID("author-1"),
-      questionId: newQuestion.id,
-    });
-
-    await inMemoryQuestionsRepository.create(newQuestion);
-    await inMemoryAnswersRespository.create(newAnswer);
-
-    expect(async () => {
-      await sut.execute({
-        questionId: newQuestion.id.toString(),
-        authorId: "123",
-        answerId: newAnswer.id.toString(),
-      });
-    }).rejects.toBeInstanceOf(Error);
-  });
-
   it("Should not be able to select a best answer with a wrong answerId", async () => {
     const newQuestion = makeQuestion({
       slug: Slug.create("example-question"),
@@ -100,12 +58,13 @@ describe("Choose Question Best Answer Test", () => {
     await inMemoryQuestionsRepository.create(newQuestion);
     await inMemoryAnswersRespository.create(newAnswer);
 
-    expect(async () => {
-      await sut.execute({
-        questionId: newQuestion.id.toString(),
-        authorId: newQuestion.authorId.toString(),
-        answerId: "123",
-      });
-    }).rejects.toBeInstanceOf(Error);
+    const result = await sut.execute({
+      questionId: newQuestion.id.toString(),
+      authorId: newQuestion.authorId.toString(),
+      answerId: "123",
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
   });
 });

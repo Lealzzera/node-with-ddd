@@ -2,6 +2,8 @@ import { InMemoryAnswersRepository } from "test/repositories/in-memory-answers-r
 import { makeAnswer } from "test/factories/make-answer";
 import { DeleteAnswerUseCase } from "./delete-answer";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
+import { NotAllowedError } from "./errors/not-allowed-error";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
 let inMemoryAnswersRepository: InMemoryAnswersRepository;
 let sut: DeleteAnswerUseCase;
@@ -38,11 +40,12 @@ describe("Delete Answer Test", () => {
 
     await inMemoryAnswersRepository.create(newAnswer);
 
-    expect(async () => {
-      await sut.execute({
-        answerId: newAnswer.id.toString(),
-        authorId: "123",
-      });
-    }).rejects.toBeInstanceOf(Error);
+    const result = await sut.execute({
+      answerId: newAnswer.id.toString(),
+      authorId: "123",
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(ResourceNotFoundError);
   });
 });

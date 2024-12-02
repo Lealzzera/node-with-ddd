@@ -2,6 +2,7 @@ import { InMemoryQuestionsRepository } from "test/repositories/in-memory-questio
 import { makeQuestion } from "test/factories/make-question";
 import { Slug } from "../../enterprise/entities/value-objects/slug";
 import { DeleteQuestionUseCase } from "./delete-question";
+import { NotAllowedError } from "./errors/not-allowed-error";
 
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
 let sut: DeleteQuestionUseCase;
@@ -38,11 +39,12 @@ describe("Delete Question Test", () => {
 
     await inMemoryQuestionsRepository.create(newQuestion);
 
-    expect(async () => {
-      await sut.execute({
-        questionId: newQuestion.id.toString(),
-        authorId: "123",
-      });
-    }).rejects.toBeInstanceOf(Error);
+    const result = await sut.execute({
+      questionId: newQuestion.id.toString(),
+      authorId: "123",
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(NotAllowedError);
   });
 });
