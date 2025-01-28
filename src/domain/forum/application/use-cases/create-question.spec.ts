@@ -25,8 +25,12 @@ describe("Create Questions Test", () => {
     expect(result.value?.question.authorId.toValue()).toEqual(
       expect.any(String)
     );
-    expect(inMemoryQuestionsRepository.items[0].attachments).toHaveLength(2);
-    expect(inMemoryQuestionsRepository.items[0].attachments).toEqual([
+    expect(
+      inMemoryQuestionsRepository.items[0].attachments.currentItems
+    ).toHaveLength(2);
+    expect(
+      inMemoryQuestionsRepository.items[0].attachments.currentItems
+    ).toEqual([
       expect.objectContaining({ attachmentId: new UniqueEntityID("1") }),
       expect.objectContaining({ attachmentId: new UniqueEntityID("2") }),
     ]);
