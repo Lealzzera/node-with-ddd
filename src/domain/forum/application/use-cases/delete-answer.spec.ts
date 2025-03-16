@@ -4,13 +4,20 @@ import { DeleteAnswerUseCase } from "./delete-answer";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
 import { NotAllowedError } from "./errors/not-allowed-error";
 import { ResourceNotFoundError } from "./errors/resource-not-found-error";
+import { InMemoryAnswerAttachmentsRepository } from "test/repositories/in-memory-answer-attachments-repository";
+import { makeAnswerAttachments } from "test/factories/make-answer-attachment";
 
 let inMemoryAnswersRepository: InMemoryAnswersRepository;
+let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository;
 let sut: DeleteAnswerUseCase;
 
 describe("Delete Answer Test", () => {
   beforeEach(() => {
-    inMemoryAnswersRepository = new InMemoryAnswersRepository();
+    inMemoryAnswerAttachmentsRepository =
+      new InMemoryAnswerAttachmentsRepository();
+    inMemoryAnswersRepository = new InMemoryAnswersRepository(
+      inMemoryAnswerAttachmentsRepository
+    );
     sut = new DeleteAnswerUseCase(inMemoryAnswersRepository);
   });
   it("Should be able to delete a answer by its answerId", async () => {
@@ -19,6 +26,17 @@ describe("Delete Answer Test", () => {
     });
 
     await inMemoryAnswersRepository.create(newAnswer);
+
+    inMemoryAnswerAttachmentsRepository.items.push(
+      makeAnswerAttachments({
+        answerId: newAnswer.id,
+        attachmentId: new UniqueEntityID("1"),
+      }),
+      makeAnswerAttachments({
+        answerId: newAnswer.id,
+        attachmentId: new UniqueEntityID("2"),
+      })
+    );
 
     await sut.execute({
       answerId: newAnswer.id.toString(),
@@ -29,6 +47,12 @@ describe("Delete Answer Test", () => {
       newAnswer.id.toString()
     );
 
+    const answerAttchments =
+      await inMemoryAnswerAttachmentsRepository.findManyByAnswerId(
+        newAnswer.id.toString()
+      );
+
+    expect(answerAttchments).toHaveLength(0);
     expect(answer).toEqual(null);
     expect(answer).toBeFalsy();
   });
