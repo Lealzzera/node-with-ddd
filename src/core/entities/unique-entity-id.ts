@@ -13,4 +13,8 @@ export class UniqueEntityID {
   toValue() {
     return this.value;
   }
+
+  equals(id: UniqueEntityID) {
+    return id.toValue() === this.value;
+  }
 }
